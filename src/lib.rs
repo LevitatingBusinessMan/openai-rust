@@ -26,7 +26,7 @@ impl Client {
 
     /// Create a new client.
     /// This will automatically build a [reqwest::Client] used internally.
-    pub fn new(api_key: String) -> Client {
+    pub fn new(api_key: &str) -> Client {
         use reqwest::header;
 
         // Create the header map
