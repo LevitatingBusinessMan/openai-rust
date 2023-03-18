@@ -12,7 +12,6 @@ lazy_static! {
 
 /// This is the main interface to interact with the api.
 pub struct Client {
-    api_key: String,
     req_client: reqwest::Client,
 }
 
@@ -38,7 +37,6 @@ impl Client {
         let req_client = reqwest::ClientBuilder::new().default_headers(headers).build().unwrap();
 
         Client {
-            api_key,
             req_client,
         }
     }
