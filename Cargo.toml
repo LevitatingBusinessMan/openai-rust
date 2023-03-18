@@ -2,13 +2,23 @@
 name = "openai-rs"
 version = "0.1.0"
 edition = "2021"
+author = "LevitatingBusinessMan"
+description = "Library for the OpenAI API"
+repository = "https://github.com/LevitatingBusinessMan/openai-rs"
+readme = "README.md"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[example]]
+name = "chat"
+path = "examples/chat_example.rs"
+
 [dependencies]
+anyhow = "1.0.70"
 lazy_static = "1.4.0"
 reqwest = { features = ["json"], version = "0.11.14"}
 serde = {features = ["derive"], version = "1.0.157"}
 
 [dev-dependencies]
-tokio = { features = ["macros"], version = "1.26.0"}
+tokio = { features = ["macros", "rt", "rt-multi-thread"], version = "1.26.0"}

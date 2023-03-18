@@ -1,10 +1,16 @@
+//! test
+#![doc = include_str!("../README.md")]
 use reqwest;
 use lazy_static::lazy_static;
+use anyhow::{anyhow, Result};
+
 
 lazy_static! {
     static ref BASE_URL: reqwest::Url = reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
 }
 
+
+/// This is the main interface to interact with the api.
 pub struct Client {
     api_key: String,
     req_client: reqwest::Client,
@@ -12,42 +18,15 @@ pub struct Client {
 
 
 /// See <https://platform.openai.com/docs/api-reference/models>
-pub mod models {
-    use serde::Deserialize;
+pub mod models;
 
-    #[derive(Deserialize, Debug)]
-    pub struct ListModelsResponse {
-        pub data: Vec<Model>,
-        pub object: String,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct Model {
-        pub id: String,
-        pub object: String,
-        pub owned_by: String,
-        pub permission: Vec<ModelPermission>
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct ModelPermission {
-        pub id: String,
-        pub object: String,
-        pub created: u32,
-        pub allow_create_engine: bool,
-        pub allow_sampling: bool,
-        pub allow_logprobs: bool,
-        pub allow_search_indices: bool,
-        pub allow_view: bool,
-        pub allow_fine_tuning: bool,
-        pub organization: String,
-        pub group: Option<String>,
-        pub is_blocking: bool,
-    }
-}
+/// See <https://platform.openai.com/docs/api-reference/chat>
+pub mod chat;
 
 impl Client {
 
+    /// Create a new client.
+    /// This will automatically build a [reqwest::Client] used internally.
     pub fn new(api_key: String) -> Client {
         use reqwest::header;
 
@@ -66,17 +45,31 @@ impl Client {
 
     /// Lists the currently available models, and provides basic information about each one such as the owner and availability.
     /// See <https://platform.openai.com/docs/api-reference/models/list>
-    pub async fn list_models(&self) -> Result<models::ListModelsResponse, reqwest::Error> {
+    pub async fn list_models(&self) -> Result<models::ListModelsResponse, anyhow::Error> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/models");
 
-        match self.req_client.get(url).send().await {
-            Ok(res) => {
-                res.json::<models::ListModelsResponse>().await
-            },
-            Err(err) => {
-                Err(err)
-            }
+        let res = self.req_client.get(url).send().await?;
+
+        if res.status() == 200 {
+            Ok(res.json::<models::ListModelsResponse>().await?)
+        } else {
+            Err(anyhow!(res.text().await?))
         }
+    }
+
+    /// Given a chat conversation, the model will return a chat completion response.
+    /// See <https://platform.openai.com/docs/api-reference/chat>
+    pub async fn create_chat(&self, args: chat::ChatArguments) -> Result<chat::ChatResponse, anyhow::Error>  {
+        let mut url = BASE_URL.clone();
+        url.set_path("/v1/chat/completions");
+
+        let res = self.req_client.post(url).json(&args).send().await?;
+
+        if res.status() == 200 {
+            Ok(res.json::<chat::ChatResponse>().await?)
+        } else {
+            Err(anyhow!(res.text().await?))
+        }  
     }
 }
