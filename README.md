@@ -6,7 +6,7 @@ This is a library to interact with the [Openai-API](https://platform.openai.com/
 // Here we will use the chat completion endpoint
 let client = openai_rust::Client::new(&std::env::var("OPENAI_API_KEY").unwrap());
 let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
-    openai_rust::chat::ChatMessage {
+    openai_rust::chat::Message {
         role: "user".to_owned(),
         content: "Hello GPT!".to_owned(),
     }

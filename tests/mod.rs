@@ -11,7 +11,7 @@ pub async fn list_models() {
 pub async fn create_chat() {
     let c = openai_rust::Client::new(&var("OPENAI_API_KEY").unwrap());
     let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
-        openai_rust::chat::ChatMessage {
+        openai_rust::chat::Message {
             role: "user".to_owned(),
             content: "Hello GPT!".to_owned(),
         }
