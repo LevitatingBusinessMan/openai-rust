@@ -120,7 +120,7 @@ impl Client {
             let stream = stream.map(chat::stream::deserialize_chat_events);
             Ok(stream)
         } else {
-            Err(anyhow!("eh"))
+            Err(anyhow!(res.text().await?))
         }
     }
 }
