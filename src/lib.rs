@@ -19,10 +19,10 @@ pub struct Client {
 }
 
 
-/// See <https://platform.openai.com/docs/api-reference/models>
+/// See <https://platform.openai.com/docs/api-reference/models>.
 pub mod models;
 
-/// See <https://platform.openai.com/docs/api-reference/chat>
+/// See <https://platform.openai.com/docs/api-reference/chat>.
 pub mod chat;
 
 impl Client {
@@ -64,11 +64,13 @@ impl Client {
     /// 
     /// See <https://platform.openai.com/docs/api-reference/chat>.
     /// ```
+    /// # use openai_rust;
+    /// # let client = openai_rust::Client::new("");
     /// let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
-    /// openai_rust::chat::Message {
-    ///     role: "user".to_owned(),
-    ///     content: "Hello GPT!".to_owned(),
-    /// }
+    ///    openai_rust::chat::Message {
+    ///        role: "user".to_owned(),
+    ///        content: "Hello GPT!".to_owned(),
+    ///    }
     /// ]);
     /// let res = client.create_chat(args).await.unwrap();
     /// println!("{}", res.choices[0].message.content);
@@ -92,6 +94,14 @@ impl Client {
     /// This method will return a stream. Calling [next](StreamExt::next) on it will return a vector of [chat::stream::ChatResponseEvent]s.
     /// 
     /// ```
+    /// # use openai_rust;
+    /// # let client = openai_rust::Client::new("");
+    /// # let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
+    /// #    openai_rust::chat::Message {
+    /// #        role: "user".to_owned(),
+    /// #        content: "Hello GPT!".to_owned(),
+    /// #    }
+    /// # ]);
     /// use openai_rust::futures_util::StreamExt;
     /// let mut res = client.create_chat_stream(args).await.unwrap();
     /// while let Some(events) = res.next().await {
