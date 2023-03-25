@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Request arguments for chat completion
 /// See <https://platform.openai.com/docs/api-reference/chat/create>
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct ChatArguments {
     pub model: String,
     pub messages: Vec<Message>,
@@ -52,6 +52,65 @@ pub struct ChatResponse {
     pub created: u32,
     pub choices: Vec<Choice>,
     pub usage: Usage
+}
+
+/// Structs and deserialization method for the responses
+/// when using streaming chat responses.
+pub mod stream {
+    use serde::Deserialize;
+    use bytes::Bytes;
+    use anyhow::Context;
+    use std::str;
+
+    
+    #[derive(Deserialize, Debug)]
+    pub struct ChatResponseEvent {
+        pub id: String,
+        pub object: String,
+        pub created: u32,
+        pub model: String,
+        pub choices: Vec<ChoiceEvent>,
+    }
+    
+    #[derive(Deserialize, Debug)]
+    pub struct ChoiceEvent {
+        pub delta: ChoiceDelta,
+        pub index: u32,
+        pub finish_reason: Option<String>,
+    }
+    
+    #[derive(Deserialize, Debug)]
+    pub struct ChoiceDelta {
+        pub content: Option<String>,
+    }
+
+    pub(crate) fn deserialize_chat_events(body: Result<Bytes, reqwest::Error>)-> Result<Vec<ChatResponseEvent>, anyhow::Error>{
+        let body = body?;
+        let data = str::from_utf8(&body)?.to_owned();
+        
+        // All events are in the form of data: {...}
+        // Except the last event which is always in the form of data: [DONE]
+
+        let events = data.split("\n\n");
+
+        let mut responses = vec![];
+
+        for event in events {
+            if event.is_empty() {break};
+
+            // Remove the 'data: ' to make it valid JSON
+            let str = event.strip_prefix("data: ").context("Unexpected response format")?;
+
+            if str == "[DONE]" {
+                break
+            }
+
+            responses.push(serde_json::from_str::<ChatResponseEvent>(&str)?);
+        }
+
+
+        Ok(responses)
+    }
 }
 
 #[derive(Deserialize, Debug)]

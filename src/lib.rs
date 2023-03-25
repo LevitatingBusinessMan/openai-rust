@@ -1,9 +1,12 @@
-//! test
 #![doc = include_str!("../README.md")]
 use reqwest;
 use lazy_static::lazy_static;
 use anyhow::{anyhow, Result};
+use futures_util::StreamExt;
+use futures_util::stream::Stream;
 
+// Re-export futures_util
+pub extern crate futures_util;
 
 lazy_static! {
     static ref BASE_URL: reqwest::Url = reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
@@ -70,4 +73,29 @@ impl Client {
             Err(anyhow!(res.text().await?))
         }  
     }
+
+    /// Like [Client::create_chat] but with streaming
+    /// See <https://platform.openai.com/docs/api-reference/chat>
+    pub async fn create_chat_stream(
+        &self,
+        args: chat::ChatArguments,
+    ) -> Result<impl Stream<Item = Result<Vec<chat::stream::ChatResponseEvent>>>> {
+        let mut url = BASE_URL.clone();
+        url.set_path("/v1/chat/completions");
+
+        // Ensure streaming is enabled
+        let mut args = args.clone();
+        args.stream = Some(true);
+
+        let res = self.req_client.post(url).json(&args).send().await?;
+
+        if res.status() == 200 {
+            let stream = res.bytes_stream();
+            let stream = stream.map(chat::stream::deserialize_chat_events);
+            Ok(stream)
+        } else {
+            Err(anyhow!("eh"))
+        }
+    }
+
 }
