@@ -13,8 +13,8 @@ async fn main() {
         }
     ]);
     let mut res = client.create_chat_stream(args).await.unwrap();
-    while let Some(item) = res.next().await {
-        for event in item.unwrap() {
+    while let Some(events) = res.next().await {
+        for event in events.unwrap() {
             print!("{}", event.choices[0].delta.content.as_ref().unwrap_or(&"".to_owned()));
             std::io::stdout().flush().unwrap();
         }

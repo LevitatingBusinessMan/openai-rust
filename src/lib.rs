@@ -45,7 +45,8 @@ impl Client {
     }
 
     /// Lists the currently available models, and provides basic information about each one such as the owner and availability.
-    /// See <https://platform.openai.com/docs/api-reference/models/list>
+    /// 
+    /// See <https://platform.openai.com/docs/api-reference/models/list>.
     pub async fn list_models(&self) -> Result<models::ListModelsResponse, anyhow::Error> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/models");
@@ -60,7 +61,18 @@ impl Client {
     }
 
     /// Given a chat conversation, the model will return a chat completion response.
-    /// See <https://platform.openai.com/docs/api-reference/chat>
+    /// 
+    /// See <https://platform.openai.com/docs/api-reference/chat>.
+    /// ```
+    /// let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
+    /// openai_rust::chat::Message {
+    ///     role: "user".to_owned(),
+    ///     content: "Hello GPT!".to_owned(),
+    /// }
+    /// ]);
+    /// let res = client.create_chat(args).await.unwrap();
+    /// println!("{}", res.choices[0].message.content);
+    /// ```
     pub async fn create_chat(&self, args: chat::ChatArguments) -> Result<chat::ChatResponse, anyhow::Error>  {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/chat/completions");
@@ -75,7 +87,21 @@ impl Client {
     }
 
     /// Like [Client::create_chat] but with streaming
-    /// See <https://platform.openai.com/docs/api-reference/chat>
+    /// See <https://platform.openai.com/docs/api-reference/chat>.
+    /// 
+    /// This method will return a stream. Calling [next](StreamExt::next) on it will return a vector of [chat::stream::ChatResponseEvent]s.
+    /// 
+    /// ```
+    /// use openai_rust::futures_util::StreamExt;
+    /// let mut res = client.create_chat_stream(args).await.unwrap();
+    /// while let Some(events) = res.next().await {
+    ///     for event in events.unwrap() {
+    ///         print!("{}", event.choices[0].delta.content.as_ref().unwrap_or(&"".to_owned()));
+    ///         std::io::stdout().flush().unwrap();
+    ///     }
+    /// }
+    /// ```
+    /// 
     pub async fn create_chat_stream(
         &self,
         args: chat::ChatArguments,
@@ -97,5 +123,4 @@ impl Client {
             Err(anyhow!("eh"))
         }
     }
-
 }
