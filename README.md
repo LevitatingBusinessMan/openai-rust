@@ -5,7 +5,7 @@
 [![docs.rs](https://img.shields.io/docsrs/openai-rust)](https://docs.rs/openai-rust/latest/openai_rust/)
 
 
-This is a library to interact with the [Openai-API](https://platform.openai.com/docs/api-reference). The goal of this crate is to support the entire api.
+This is an unofficial library to interact with the [Openai-API](https://platform.openai.com/docs/api-reference). The goal of this crate is to support the entire api.
 
 ### Example usage
 ```rust ignore
