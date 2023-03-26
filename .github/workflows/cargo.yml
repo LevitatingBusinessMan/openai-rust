@@ -1,0 +1,23 @@
+name: Cargo
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  OPENAI_API_KEY: ${{secrets.OPENAI_API_KEY}}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build
+    - name: Test
+      run: cargo test
