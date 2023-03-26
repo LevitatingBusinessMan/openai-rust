@@ -1,7 +1,10 @@
 # openai-rust
-[![Test Status](https://github.com/LevitatingBusinessMan/openai-rust/workflows/Cargo/badge.svg)](https://github.com/LevitatingBusinessMan/openai-rust/actions)
+
+[![Test Status](https://github.com/LevitatingBusinessMan/openai-rust/workflows/Build/badge.svg)](https://github.com/LevitatingBusinessMan/openai-rust/actions)
 [![Crates.io](https://img.shields.io/crates/v/openai-rust)](https://crates.io/crates/openai-rust)
-[![docs.rs](https://img.shields.io/docsrs/openai-cli)](https://docs.rs/openai-rust/latest/openai_rust/)
+[![docs.rs](https://img.shields.io/docsrs/openai-rust)](https://docs.rs/openai-rust/latest/openai_rust/)
+
+
 This is a library to interact with the [Openai-API](https://platform.openai.com/docs/api-reference). The goal of this crate is to support the entire api.
 
 ### Example usage
