@@ -23,6 +23,9 @@ pub mod models;
 /// See <https://platform.openai.com/docs/api-reference/chat>.
 pub mod chat;
 
+/// See <https://platform.openai.com/docs/api-reference/completions>.
+pub mod completions;
+
 impl Client {
 
     /// Create a new client.
@@ -134,8 +137,8 @@ impl Client {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/chat/completions");
 
-        // Ensure streaming is enabled
-        let mut args = args.clone();
+        // Enable streaming
+        let mut args = args;
         args.stream = Some(true);
 
         let res = self.req_client.post(url).json(&args).send().await?;
@@ -147,5 +150,18 @@ impl Client {
         } else {
             Err(anyhow!(res.text().await?))
         }
+    }
+
+    pub async fn create_completion(&self, args: completions::CompletionArguments) -> Result<completions::CompletionResponse> {
+        let mut url = BASE_URL.clone();
+        url.set_path("/v1/completions");
+
+        let res = self.req_client.post(url).json(&args).send().await?;
+
+        if res.status() == 200 {
+            Ok(res.json::<completions::CompletionResponse>().await?)
+        } else {
+            Err(anyhow!(res.text().await?))
+        }  
     }
 }
