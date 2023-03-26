@@ -152,6 +152,18 @@ impl Client {
         }
     }
 
+    /// Creates a completion for the provided prompt and parameters
+    /// 
+    /// ```no_run
+    /// # use openai_rust;
+    /// # use tokio_test;
+    /// # tokio_test::block_on(async {
+    /// # let api_key = "";
+    /// let c = openai_rust::Client::new(api_key);
+    /// let args = openai_rust::completions::CompletionArguments::new("text-davinci-003", "The quick brown fox".to_owned());
+    /// println!("{}", c.create_completion(args).await.unwrap().choices[0].text);
+    /// # })
+    /// ```
     pub async fn create_completion(&self, args: completions::CompletionArguments) -> Result<completions::CompletionResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/completions");
