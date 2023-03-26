@@ -5,7 +5,6 @@ use anyhow::{anyhow, Result};
 use futures_util::StreamExt;
 use futures_util::stream::Stream;
 
-// Re-export futures_util
 pub extern crate futures_util;
 
 lazy_static! {
@@ -45,15 +44,21 @@ impl Client {
 
     /// Lists the currently available models, and provides basic information about each one such as the owner and availability.
     /// 
+    /// ```no_run
+    /// # api_key = std::env::var("OPENAI_API_KEY").unwrap()
+    /// let client = openai_rust::Client(api_key)::new();
+    /// let models = client.list_models().await.unwrap();
+    /// ```
+    /// 
     /// See <https://platform.openai.com/docs/api-reference/models/list>.
-    pub async fn list_models(&self) -> Result<models::ListModelsResponse, anyhow::Error> {
+    pub async fn list_models(&self) -> Result<Vec<models::Model>, anyhow::Error> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/models");
 
         let res = self.req_client.get(url).send().await?;
 
         if res.status() == 200 {
-            Ok(res.json::<models::ListModelsResponse>().await?)
+            Ok(res.json::<models::ListModelsResponse>().await?.data)
         } else {
             Err(anyhow!(res.text().await?))
         }
@@ -66,7 +71,8 @@ impl Client {
     /// # use tokio_test;
     /// # tokio_test::block_on(async {
     /// # use openai_rust;
-    /// # let client = openai_rust::Client::new("");
+    /// # let api_key = "";
+    /// let client = openai_rust::Client::new(api_key);
     /// let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
     ///    openai_rust::chat::Message {
     ///        role: "user".to_owned(),
@@ -90,7 +96,8 @@ impl Client {
         }  
     }
 
-    /// Like [Client::create_chat] but with streaming
+    /// Like [Client::create_chat] but with streaming.
+    /// 
     /// See <https://platform.openai.com/docs/api-reference/chat>.
     /// 
     /// This method will return a stream. Calling [next](StreamExt::next) on it will return a vector of [chat::stream::ChatResponseEvent]s.

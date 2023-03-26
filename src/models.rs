@@ -1,23 +1,22 @@
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
-pub struct ListModelsResponse {
+pub(crate) struct ListModelsResponse {
     pub data: Vec<Model>,
-    pub object: String,
 }
 
+/// A model with permissions
 #[derive(Deserialize, Debug)]
 pub struct Model {
     pub id: String,
-    pub object: String,
     pub owned_by: String,
     pub permission: Vec<ModelPermission>
 }
 
+/// Permissions of a model
 #[derive(Deserialize, Debug)]
 pub struct ModelPermission {
     pub id: String,
-    pub object: String,
     pub created: u32,
     pub allow_create_engine: bool,
     pub allow_sampling: bool,

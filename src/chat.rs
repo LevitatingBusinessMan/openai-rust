@@ -63,7 +63,6 @@ impl ChatArguments {
 #[derive(Deserialize, Debug)]
 pub struct ChatResponse {
     pub id: String,
-    pub object: String,
     pub created: u32,
     pub choices: Vec<Choice>,
     pub usage: Usage
@@ -85,7 +84,6 @@ pub mod stream {
     #[derive(Deserialize, Debug)]
     pub struct ChatResponseEvent {
         pub id: String,
-        pub object: String,
         pub created: u32,
         pub model: String,
         pub choices: Vec<Choice>,
@@ -105,6 +103,7 @@ pub mod stream {
         pub content: Option<String>,
     }
 
+    /// Used for deserializing the event stream
     pub(crate) fn deserialize_chat_events(body: Result<Bytes, reqwest::Error>)-> Result<Vec<ChatResponseEvent>, anyhow::Error>{
         let body = body?;
         let data = str::from_utf8(&body)?.to_owned();
