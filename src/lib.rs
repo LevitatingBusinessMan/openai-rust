@@ -45,9 +45,11 @@ impl Client {
     /// Lists the currently available models, and provides basic information about each one such as the owner and availability.
     /// 
     /// ```no_run
-    /// # api_key = std::env::var("OPENAI_API_KEY").unwrap()
-    /// let client = openai_rust::Client(api_key)::new();
+    /// # let api_key = "";
+    /// # tokio_test::block_on(async {
+    /// let client = openai_rust::Client::new(api_key);
     /// let models = client.list_models().await.unwrap();
+    /// # })
     /// ```
     /// 
     /// See <https://platform.openai.com/docs/api-reference/models/list>.
