@@ -57,7 +57,7 @@ impl ChatArguments {
 }
 
 /// This is the response of a chat.
-/// ```
+/// ```ignore
 /// let msg = res.choices[0].content;
 /// ```
 #[derive(Deserialize, Debug)]
@@ -79,7 +79,7 @@ pub mod stream {
 
     /// This is the partial chat result received when streaming.
     /// 
-    /// ```
+    /// ```ignore
     /// msg += res.choices[0].delta.content;
     /// ```
     #[derive(Deserialize, Debug)]

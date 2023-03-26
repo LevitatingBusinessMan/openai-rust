@@ -12,7 +12,6 @@ lazy_static! {
     static ref BASE_URL: reqwest::Url = reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
 }
 
-
 /// This is the main interface to interact with the api.
 pub struct Client {
     req_client: reqwest::Client,
@@ -63,7 +62,9 @@ impl Client {
     /// Given a chat conversation, the model will return a chat completion response.
     /// 
     /// See <https://platform.openai.com/docs/api-reference/chat>.
-    /// ```
+    /// ```no_run
+    /// # use tokio_test;
+    /// # tokio_test::block_on(async {
     /// # use openai_rust;
     /// # let client = openai_rust::Client::new("");
     /// let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
@@ -74,6 +75,7 @@ impl Client {
     /// ]);
     /// let res = client.create_chat(args).await.unwrap();
     /// println!("{}", res.choices[0].message.content);
+    /// # })
     /// ```
     pub async fn create_chat(&self, args: chat::ChatArguments) -> Result<chat::ChatResponse, anyhow::Error>  {
         let mut url = BASE_URL.clone();
@@ -93,8 +95,11 @@ impl Client {
     /// 
     /// This method will return a stream. Calling [next](StreamExt::next) on it will return a vector of [chat::stream::ChatResponseEvent]s.
     /// 
-    /// ```
+    /// ```no_run
+    /// # use tokio_test;
+    /// # tokio_test::block_on(async {
     /// # use openai_rust;
+    /// # use std::io::Write;
     /// # let client = openai_rust::Client::new("");
     /// # let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
     /// #    openai_rust::chat::Message {
@@ -110,6 +115,7 @@ impl Client {
     ///         std::io::stdout().flush().unwrap();
     ///     }
     /// }
+    /// # })
     /// ```
     /// 
     pub async fn create_chat_stream(
