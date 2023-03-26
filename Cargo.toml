@@ -13,6 +13,11 @@ license = "MIT"
 [[example]]
 name = "chat"
 path = "examples/chat_example.rs"
+doc-scrape-examples = true
+
+[[example]]
+name = "chat_stream"
+path = "examples/chat_stream_example.rs"
 
 [dependencies]
 anyhow = "1.0.70"
