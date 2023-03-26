@@ -23,7 +23,7 @@ println!("{}", res.choices[0].message.content);
 
 You can run this code as an example with `OPENAI_API_KEY=(your key) cargo run --example chat`.
 
-Checkout the examples directory for more usage examples.
+Checkout the examples directory for more usage examples. You can find documentation on [docs.rs](https://docs.rs/openai-rust/latest/openai_rust/).
 
 ### Projects using openai-rust
 * [openai-cli](https://github.com/LevitatingBusinessMan/openai-cli): a CLI for interacting with GPT.
