@@ -6,6 +6,7 @@ authors = ["LevitatingBusinessMan"]
 description = "Library for the OpenAI API"
 repository = "https://github.com/LevitatingBusinessMan/openai-rust"
 keywords = ["openai", "gpt", "library", "api", "async"]
+documentation = "https://docs.rs/openai-rust"
 categories = ["api-bindings"]
 readme = "README.md"
 license = "MIT"
