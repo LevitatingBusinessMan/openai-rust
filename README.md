@@ -18,7 +18,7 @@ let args = openai_rust::chat::ChatArguments::new("gpt-3.5-turbo", vec![
     }
 ]);
 let res = client.create_chat(args).await.unwrap();
-println!("{}", res.choices[0].message.content);
+println!("{}", res);
 ```
 
 You can run this code as an example with `OPENAI_API_KEY=(your key) cargo run --example chat`.

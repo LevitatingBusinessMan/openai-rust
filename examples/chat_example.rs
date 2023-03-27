@@ -11,5 +11,5 @@ async fn main() {
         }
     ]);
     let res = client.create_chat(args).await.unwrap();
-    println!("{}", res.choices[0].message.content);
+    println!("{}", res);
 }

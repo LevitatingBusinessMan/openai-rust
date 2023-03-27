@@ -94,7 +94,7 @@ pub struct CompletionArguments {
     /// When used with `n`, `best_of` controls the number of candidate completions and `n` specifies how many to return – `best_of` must be greater than `n`.
     /// 
     /// *Note:* Because this parameter generates many completions,it can quickly consume your token quota.
-    /// Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`.
+    /// Use carefully and ensure that you have reasonable settings for max_tokens` and `stop`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub best_of: Option<u32>,
     //logit_bias
@@ -128,10 +128,35 @@ impl CompletionArguments {
 }
 
 /// The repsonse of a completion request.
-/// ```ignore
-/// let text = res.choices[0].text;
+/// 
+/// It implements [Display](std::fmt::Display) as a shortcut to easily extract the content.
 /// ```
-#[derive(Deserialize, Debug)]
+/// # use serde_json;
+/// # let json = "{
+/// #  \"id\": \"cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7\",
+/// #  \"object\": \"text_completion\",
+/// #  \"created\": 1589478378,
+/// #  \"model\": \"text-davinci-003\",
+/// #  \"choices\": [
+/// #    {
+/// #      \"text\": \"\\n\\nThis is indeed a test\",
+/// #      \"index\": 0,
+/// #      \"logprobs\": null,
+/// #      \"finish_reason\": \"length\"
+/// #    }
+/// #  ],
+/// #  \"usage\": {
+/// #    \"prompt_tokens\": 5,
+/// #    \"completion_tokens\": 7,
+/// #    \"total_tokens\": 12
+/// #  }
+/// # }";
+/// # let res = serde_json::from_str::<openai_rust::completions::CompletionResponse>(json).unwrap();
+/// let text = &res.choices[0].text;
+/// // or
+/// let text = res.to_string();
+/// ```
+#[derive(Deserialize, Debug, Clone)]
 pub struct CompletionResponse {
     pub id: String,
     pub created: u32,
@@ -139,8 +164,16 @@ pub struct CompletionResponse {
     pub choices: Vec<Choice>,
 }
 
+impl std::fmt::Display for CompletionResponse {
+  /// Automatically grab the first choice
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.choices[0].text)?;
+        Ok(())
+    }
+}
+
 /// The completion choices of a completion response. 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Choice {
     pub text: String,
     pub index: u32,
@@ -149,7 +182,7 @@ pub struct Choice {
 }
 
 /// The log probabilities of a completion response.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct LogProbs {
     pub tokens: Vec<String>,
     pub token_logprobs: Vec<f32>,

@@ -80,15 +80,46 @@ impl ChatArguments {
 }
 
 /// This is the response of a chat.
-/// ```ignore
-/// let msg = res.choices[0].content;
+/// 
+/// It implements [Display](std::fmt::Display) as a shortcut to easily extract the content.
 /// ```
-#[derive(Deserialize, Debug)]
+/// # use serde_json;
+/// # let json = "{
+/// #  \"id\": \"chatcmpl-123\",
+/// #  \"object\": \"chat.completion\",
+/// #  \"created\": 1677652288,
+/// #  \"choices\": [{
+/// #    \"index\": 0,
+/// #    \"message\": {
+/// #     \"role\": \"assistant\",
+/// #     \"content\": \"\\n\\nHello there, how may I assist you today?\"
+/// #    },
+/// #    \"finish_reason\": \"stop\"
+/// #  }],
+/// #  \"usage\": {
+/// #   \"prompt_tokens\": 9,
+/// #   \"completion_tokens\": 12,
+/// #   \"total_tokens\": 21
+/// #  }
+/// # }";
+/// # let res = serde_json::from_str::<openai_rust::chat::ChatResponse>(json).unwrap();
+/// let msg = &res.choices[0].message.content;
+/// // or
+/// let msg = res.to_string();
+/// ```
+#[derive(Deserialize, Debug, Clone)]
 pub struct ChatResponse {
     pub id: String,
     pub created: u32,
     pub choices: Vec<Choice>,
     pub usage: Usage
+}
+
+impl std::fmt::Display for ChatResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", &self.choices[0].message.content)?;
+        Ok(())
+    }
 }
 
 /// Structs and deserialization method for the responses
@@ -100,20 +131,47 @@ pub mod stream {
     use std::str;
 
     /// This is the partial chat result received when streaming.
-    /// 
-    /// ```ignore
-    /// msg += res.choices[0].delta.content;
+    ///
+    /// It implements [Display](std::fmt::Display) as a shortcut to easily extract the content.
     /// ```
-    #[derive(Deserialize, Debug)]
+    /// # use serde_json;
+    /// # let json = "{
+    /// # \"id\": \"chatcmpl-6yX67cSCIAm4nrNLQUPOtJu9JUoLG\",
+    /// # \"object\": \"chat.completion.chunk\",
+    /// # \"created\": 1679884927,
+    /// # \"model\": \"gpt-3.5-turbo-0301\",
+    /// # \"choices\": [
+    /// #   {
+    /// #     \"delta\": {
+    /// #       \"content\": \" today\"
+    /// #     },
+    /// #     \"index\": 0,
+    /// #     \"finish_reason\": null
+    /// #   }
+    /// # ]
+    /// # }";
+    /// # let res = serde_json::from_str::<openai_rust::chat::stream::ChatResponseEvent>(json).unwrap();
+    /// let msg = &res.choices[0].delta.content;
+    /// // or
+    /// let msg = res.to_string();
+    /// ```
+    #[derive(Deserialize, Debug, Clone)]
     pub struct ChatResponseEvent {
         pub id: String,
         pub created: u32,
         pub model: String,
         pub choices: Vec<Choice>,
     }
+
+    impl std::fmt::Display for ChatResponseEvent {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.choices[0].delta.content.as_ref().unwrap_or(&"".into()))?;
+            Ok(())
+        }
+    }
     
     /// Choices for [ChatResponseEvent].
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Debug, Clone)]
     pub struct Choice {
         pub delta: ChoiceDelta,
         pub index: u32,
@@ -121,7 +179,7 @@ pub mod stream {
     }
     
     /// Additional data from [Choice].
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Debug, Clone)]
     pub struct ChoiceDelta {
         pub content: Option<String>,
     }
@@ -141,6 +199,8 @@ pub mod stream {
         for event in events {
             if event.is_empty() {break};
 
+            println!("{}", event);
+
             // Remove the 'data: ' to make it valid JSON
             let str = event.strip_prefix("data: ").context("Unexpected response format")?;
 
@@ -156,7 +216,7 @@ pub mod stream {
 }
 
 /// Infomration about the tokens used by [ChatResponse].
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Usage {
     pub prompt_tokens: u32,
     pub completion_tokens: u32,
@@ -164,7 +224,7 @@ pub struct Usage {
 }
 
 /// Completion choices from [ChatResponse].
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Choice {
     pub index: u32,
     pub message: Message,
