@@ -26,6 +26,9 @@ pub mod chat;
 /// See <https://platform.openai.com/docs/api-reference/completions>.
 pub mod completions;
 
+/// See <https://platform.openai.com/docs/api-reference/edits>.
+pub mod edit;
+
 impl Client {
 
     /// Create a new client.
@@ -175,5 +178,18 @@ impl Client {
         } else {
             Err(anyhow!(res.text().await?))
         }  
+    }
+
+    pub async fn create_edit(&self, args: edit::EditArguments) -> Result<edit::EditResponse> {
+        let mut url = BASE_URL.clone();
+        url.set_path("/v1/edits");
+
+        let res = self.req_client.post(url).json(&args).send().await?;
+
+        if res.status() == 200 {
+            Ok(res.json::<edit::EditResponse>().await?)
+        } else {
+            Err(anyhow!(res.text().await?))
+        } 
     }
 }

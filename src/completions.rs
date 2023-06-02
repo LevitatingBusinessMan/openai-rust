@@ -175,6 +175,7 @@ pub struct CompletionResponse {
     pub created: u32,
     pub model: String,
     pub choices: Vec<Choice>,
+    pub usage: Usage,
 }
 
 impl std::fmt::Display for CompletionResponse {
@@ -201,6 +202,14 @@ pub struct LogProbs {
     pub token_logprobs: Vec<f32>,
     pub top_logprobs: Vec<HashMap<String, f32>>,
     pub text_offset: Vec<u32>,
+}
+
+/// Infomration about the tokens used by [CompletionResponse].
+#[derive(Deserialize, Debug, Clone)]
+pub struct Usage {
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
+    pub total_tokens: u32,
 }
 
 /*

@@ -47,3 +47,9 @@ pub async fn create_completion_logprobs() {
     c.create_completion(args).await.unwrap();
 }
 
+#[tokio::test]
+pub async fn create_edit() {
+    let c = openai_rust::Client::new(&var("OPENAI_API_KEY").unwrap());
+    let args = openai_rust::edit::EditArguments::new("text-davinci-edit-001", "The quick brown fox".to_owned(), "Complete this sentence.".to_owned());
+    c.create_edit(args).await.unwrap();
+}
