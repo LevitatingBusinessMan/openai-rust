@@ -1,5 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+/// Request arguments for completions.
+/// 
+/// See <https://platform.openai.com/docs/api-reference/edits/create>.
+/// 
+/// ```
+/// openai_rust::edit::EditArguments::new(
+///     "text-davinci-edit-001",
+///     "The quick brown fox".to_owned(),
+///     "Complete this sentence.".to_owned()
+/// );
+/// ```
 #[derive(Serialize, Debug, Clone)]
 pub struct EditArguments {
     /// ID of the model to use. You can use the `text-davinci-edit-001` or `code-davinci-edit-001` model with this endpoint.
@@ -45,6 +56,32 @@ impl EditArguments {
     }
 }
 
+
+/// The response of an edit request.
+/// ```
+/// /// # use serde_json;
+/// # let json = "{
+/// #  \"object\": \"edit\",
+/// #  \"created\": 1589478378,
+/// #  \"choices\": [
+/// #    {
+/// #      \"text\": \"What day of the week is it?\",
+/// #      \"index\": 0
+/// #    }
+/// #  ],
+/// #  \"usage\": {
+/// #    \"prompt_tokens\": 25,
+/// #    \"completion_tokens\": 32,
+/// #    \"total_tokens\": 57
+/// #  }
+/// # }";
+/// # let res = serde_json::from_str::<openai_rust::edit::EditResponse>(json).unwrap();
+/// let text = &res.choices[0].text;
+/// // or
+/// let text = res.to_string();
+/// ```
+/// It implements [Display](std::fmt::Display) as a shortcut to easily extract the content.
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct EditResponse {
     pub created: u32,
@@ -52,6 +89,15 @@ pub struct EditResponse {
     pub usage: Usage,
 }
 
+impl std::fmt::Display for EditResponse {
+    /// Automatically grab the first choice
+      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+          write!(f, "{}", self.choices[0].text)?;
+          Ok(())
+      }
+  }
+
+/// The completion choices of an edit response. 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Choice {
     pub text: String,
