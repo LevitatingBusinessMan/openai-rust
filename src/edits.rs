@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// See <https://platform.openai.com/docs/api-reference/edits/create>.
 /// 
 /// ```
-/// openai_rust::edit::EditArguments::new(
+/// openai_rust::edits::EditArguments::new(
 ///     "text-davinci-edit-001",
 ///     "The quick brown fox".to_owned(),
 ///     "Complete this sentence.".to_owned()
@@ -75,7 +75,7 @@ impl EditArguments {
 /// #    \"total_tokens\": 57
 /// #  }
 /// # }";
-/// # let res = serde_json::from_str::<openai_rust::edit::EditResponse>(json).unwrap();
+/// # let res = serde_json::from_str::<openai_rust::edits::EditResponse>(json).unwrap();
 /// let text = &res.choices[0].text;
 /// // or
 /// let text = res.to_string();

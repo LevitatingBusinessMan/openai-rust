@@ -27,7 +27,7 @@ pub mod chat;
 pub mod completions;
 
 /// See <https://platform.openai.com/docs/api-reference/edits>.
-pub mod edit;
+pub mod edits;
 
 impl Client {
 
@@ -180,14 +180,14 @@ impl Client {
         }  
     }
 
-    pub async fn create_edit(&self, args: edit::EditArguments) -> Result<edit::EditResponse> {
+    pub async fn create_edit(&self, args: edits::EditArguments) -> Result<edits::EditResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/edits");
 
         let res = self.req_client.post(url).json(&args).send().await?;
 
         if res.status() == 200 {
-            Ok(res.json::<edit::EditResponse>().await?)
+            Ok(res.json::<edits::EditResponse>().await?)
         } else {
             Err(anyhow!(res.text().await?))
         } 
