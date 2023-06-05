@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Request arguments for completions.
+/// Request arguments for edits.
 /// 
 /// See <https://platform.openai.com/docs/api-reference/edits/create>.
 /// 
