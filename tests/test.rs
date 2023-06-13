@@ -58,3 +58,11 @@ pub async fn create_edit() {
     let args = openai_rust::edits::EditArguments::new("text-davinci-edit-001", "The quick brown fox".to_owned(), "Complete this sentence.".to_owned());
     c.create_edit(args).await.unwrap();
 }
+
+#[tokio::test]
+pub async fn external_client() {
+    use reqwest;
+    let req_c = reqwest::ClientBuilder::new().user_agent("My cool program").build().unwrap();
+    let c = openai_rust::Client::new_with_client(&KEY, req_c);
+    c.list_models().await.unwrap();
+}
