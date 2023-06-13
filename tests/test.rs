@@ -58,3 +58,10 @@ pub async fn create_edit() {
     let args = openai_rust::edits::EditArguments::new("text-davinci-edit-001", "The quick brown fox".to_owned(), "Complete this sentence.".to_owned());
     c.create_edit(args).await.unwrap();
 }
+
+#[tokio::test]
+pub async fn create_embeddings() {
+    let c = openai_rust::Client::new(&KEY);
+    let args = openai_rust::embeddings::EmbeddingsArguments::new("text-embedding-ada-002", "The food was delicious and the waiter...".to_owned());
+    c.create_embeddings(args).await.unwrap();
+}
