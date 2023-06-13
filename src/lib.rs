@@ -14,6 +14,7 @@ lazy_static! {
 /// This is the main interface to interact with the api.
 pub struct Client {
     req_client: reqwest::Client,
+    key: String,
 }
 
 
@@ -37,17 +38,17 @@ impl Client {
     /// Create a new client.
     /// This will automatically build a [reqwest::Client] used internally.
     pub fn new(api_key: &str) -> Client {
-        use reqwest::header;
-
-        // Create the header map
-        let mut headers = header::HeaderMap::new();
-        let mut key_headervalue = header::HeaderValue::from_str(&format!("Bearer {api_key}")).unwrap();
-        key_headervalue.set_sensitive(true);
-        headers.insert(header::AUTHORIZATION, key_headervalue);
-        let req_client = reqwest::ClientBuilder::new().default_headers(headers).build().unwrap();
-
+        let req_client = reqwest::ClientBuilder::new().build().unwrap();
         Client {
             req_client,
+            key: api_key.to_owned(),
+        }
+    }
+
+    pub fn new_with_client(api_key: &str, req_client: reqwest::Client) -> Client {
+        Client {
+            req_client,
+            key: api_key.to_owned(),
         }
     }
 
@@ -66,7 +67,7 @@ impl Client {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/models");
 
-        let res = self.req_client.get(url).send().await?;
+        let res = self.req_client.get(url).bearer_auth(&self.key).send().await?;
 
         if res.status() == 200 {
             Ok(res.json::<models::ListModelsResponse>().await?.data)
@@ -98,7 +99,7 @@ impl Client {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/chat/completions");
 
-        let res = self.req_client.post(url).json(&args).send().await?;
+        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
 
         if res.status() == 200 {
             Ok(res.json::<chat::ChatResponse>().await?)
@@ -147,7 +148,7 @@ impl Client {
         let mut args = args;
         args.stream = Some(true);
 
-        let res = self.req_client.post(url).json(&args).send().await?;
+        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
 
         if res.status() == 200 {
             let stream = res.bytes_stream();
@@ -176,7 +177,7 @@ impl Client {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/completions");
 
-        let res = self.req_client.post(url).json(&args).send().await?;
+        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
 
         if res.status() == 200 {
             Ok(res.json::<completions::CompletionResponse>().await?)
@@ -204,7 +205,7 @@ impl Client {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/edits");
 
-        let res = self.req_client.post(url).json(&args).send().await?;
+        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
 
         if res.status() == 200 {
             Ok(res.json::<edits::EditResponse>().await?)
