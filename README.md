@@ -7,6 +7,20 @@
 
 This is an unofficial library to interact with the [Openai-API](https://platform.openai.com/docs/api-reference). The goal of this crate is to support the entire api.
 
+#### Current features:
+- [x] [Listing models](https://platform.openai.com/docs/api-reference/models/list)
+- [x] [Completions](https://platform.openai.com/docs/api-reference/completions/create)
+- [x] [Chat](https://platform.openai.com/docs/api-reference/chat/create)
+- [x] [Streaming Chat](https://platform.openai.com/docs/api-reference/chat/create#chat/create-stream)
+- [x] [Edit](https://platform.openai.com/docs/api-reference/edits/create)
+- [x] [Embeddings](https://platform.openai.com/docs/api-reference/embeddings/create)
+- [ ] Images
+- [ ] Audio
+- [ ] Files
+- [ ] Moderations
+- [ ] Engines
+- [ ] Fine-tunes
+
 ### Example usage
 ```rust ignore
 // Here we will use the chat completion endpoint
@@ -27,3 +41,5 @@ Checkout the examples directory for more usage examples. You can find documentat
 
 ### Projects using openai-rust
 * [openai-cli](https://github.com/LevitatingBusinessMan/openai-cli): a CLI for interacting with GPT.
+* [gpt-cli-rust](https://github.com/memochou1993/gpt-cli-rust): Another CLI.
+* [electocracy](https://github.com/marioloko/electocracy): A digital voting system.
