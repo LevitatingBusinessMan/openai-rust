@@ -224,7 +224,7 @@ impl Client {
     /// # let api_key = "";
     /// let c = openai_rust::Client::new(api_key);
     /// let args = openai_rust::embeddings::EmbeddingsArguments::new("text-embedding-ada-002", "The food was delicious and the waiter...".to_owned());
-    /// println!("{}", c.create_embeddings(args).await.unwrap().data);
+    /// println!("{:?}", c.create_embeddings(args).await.unwrap().data);
     /// # })
     /// ```
     /// 
