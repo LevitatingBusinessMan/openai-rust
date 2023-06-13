@@ -29,6 +29,9 @@ pub mod completions;
 /// See <https://platform.openai.com/docs/api-reference/edits>.
 pub mod edits;
 
+/// See <https://platform.openai.com/docs/api-reference/embeddings>.
+pub mod embeddings;
+
 impl Client {
 
     /// Create a new client.
@@ -48,7 +51,7 @@ impl Client {
         }
     }
 
-    /// Lists the currently available models, and provides basic information about each one such as the owner and availability.
+    /// List and describe the various models available in the API. You can refer to the [Models](https://platform.openai.com/docs/models) documentation to understand what models are available and the differences between them.
     /// 
     /// ```no_run
     /// # let api_key = "";
@@ -72,7 +75,7 @@ impl Client {
         }
     }
 
-    /// Given a chat conversation, the model will return a chat completion response.
+    /// Given a list of messages comprising a conversation, the model will return a response.
     /// 
     /// See <https://platform.openai.com/docs/api-reference/chat>.
     /// ```no_run
@@ -155,10 +158,12 @@ impl Client {
         }
     }
 
-    /// Creates a completion for the provided prompt and parameters
+    /// Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+    /// 
+    /// See <https://platform.openai.com/docs/api-reference/completions>
     /// 
     /// ```no_run
-    /// # use openai_rust;
+    /// # use openai_rust::*;
     /// # use tokio_test;
     /// # tokio_test::block_on(async {
     /// # let api_key = "";
@@ -180,6 +185,21 @@ impl Client {
         }  
     }
 
+    /// Given a prompt and an instruction, the model will return an edited version of the prompt.
+    /// 
+    /// See <https://platform.openai.com/docs/api-reference/edits>
+    /// 
+    /// ```no_run
+    /// # use openai_rust;
+    /// # use tokio_test;
+    /// # tokio_test::block_on(async {
+    /// # let api_key = "";
+    /// let c = openai_rust::Client::new(api_key);
+    /// let args = openai_rust::edits::EditArguments::new("text-davinci-edit-001", "The quick brown fox".to_owned(), "Complete this sentence.".to_owned());
+    /// println!("{}", c.create_edit(args).await.unwrap().to_string());
+    /// # })
+    /// ```
+    /// 
     pub async fn create_edit(&self, args: edits::EditArguments) -> Result<edits::EditResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/edits");
@@ -192,4 +212,33 @@ impl Client {
             Err(anyhow!(res.text().await?))
         } 
     }
+
+    /// Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+    /// 
+    /// See <https://platform.openai.com/docs/api-reference/embeddings>
+    /// 
+    /// ```no_run
+    /// # use openai_rust;
+    /// # use tokio_test;
+    /// # tokio_test::block_on(async {
+    /// # let api_key = "";
+    /// let c = openai_rust::Client::new(api_key);
+    /// let args = openai_rust::embeddings::EmbeddingsArguments::new("text-embedding-ada-002", "The food was delicious and the waiter...".to_owned());
+    /// println!("{}", c.create_embeddings(args).await.unwrap().data);
+    /// # })
+    /// ```
+    /// 
+    pub async fn create_embeddings(&self, args: embeddings::EmbeddingsArguments) -> Result<embeddings::EmbeddingsResponse> {
+        let mut url = BASE_URL.clone();
+        url.set_path("/v1/embeddings");
+
+        let res = self.req_client.post(url).json(&args).send().await?;
+
+        if res.status() == 200 {
+            Ok(res.json::<embeddings::EmbeddingsResponse>().await?)
+        } else {
+            Err(anyhow!(res.text().await?))
+        }
+    }
+
 }
