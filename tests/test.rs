@@ -65,3 +65,11 @@ pub async fn create_embeddings() {
     let args = openai_rust::embeddings::EmbeddingsArguments::new("text-embedding-ada-002", "The food was delicious and the waiter...".to_owned());
     c.create_embeddings(args).await.unwrap();
 }
+
+#[tokio::test]
+pub async fn external_client() {
+    use reqwest;
+    let req_c = reqwest::ClientBuilder::new().user_agent("My cool program").build().unwrap();
+    let c = openai_rust::Client::new_with_client(&KEY, req_c);
+    c.list_models().await.unwrap();
+}
