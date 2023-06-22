@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 /// Request arguments for edits.
-/// 
+///
 /// See <https://platform.openai.com/docs/api-reference/edits/create>.
-/// 
+///
 /// ```
 /// openai_rust::edits::EditArguments::new(
 ///     "text-davinci-edit-001",
@@ -25,19 +25,19 @@ pub struct EditArguments {
     //How many edits to generate for the input and instruction.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub n: Option<u32>,
-    
+
     /// What sampling temperature to use, between 0 and 2.
     /// Higher values like 0.8 will make the output more random,
     /// while lower values like 0.2 will make it more focused and deterministic.
-    /// 
+    ///
     /// We generally recommend altering this or `top_p` but not both.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
-    
+
     /// An alternative to sampling with temperature, called nucleus sampling,
     /// where the model considers the results of the tokens with top_p probability mass.
     /// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-    /// 
+    ///
     /// We generally recommend altering this or `temperature` but not both.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_p: Option<f32>,
@@ -55,7 +55,6 @@ impl EditArguments {
         }
     }
 }
-
 
 /// The response of an edit request.
 /// ```
@@ -91,13 +90,13 @@ pub struct EditResponse {
 
 impl std::fmt::Display for EditResponse {
     /// Automatically grab the first choice
-      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-          write!(f, "{}", self.choices[0].text)?;
-          Ok(())
-      }
-  }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.choices[0].text)?;
+        Ok(())
+    }
+}
 
-/// The completion choices of an edit response. 
+/// The completion choices of an edit response.
 #[derive(Deserialize, Debug, Clone)]
 pub struct Choice {
     pub text: String,

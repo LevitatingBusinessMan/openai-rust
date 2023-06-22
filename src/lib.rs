@@ -1,14 +1,15 @@
 #![doc = include_str!("../README.md")]
-use reqwest;
-use lazy_static::lazy_static;
 use anyhow::{anyhow, Result};
-use futures_util::StreamExt;
 use futures_util::stream::Stream;
+use futures_util::StreamExt;
+use lazy_static::lazy_static;
+use reqwest;
 
 pub extern crate futures_util;
 
 lazy_static! {
-    static ref BASE_URL: reqwest::Url = reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
+    static ref BASE_URL: reqwest::Url =
+        reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
 }
 
 /// This is the main interface to interact with the api.
@@ -16,7 +17,6 @@ pub struct Client {
     req_client: reqwest::Client,
     key: String,
 }
-
 
 /// See <https://platform.openai.com/docs/api-reference/models>.
 pub mod models;
@@ -34,7 +34,6 @@ pub mod edits;
 pub mod embeddings;
 
 impl Client {
-
     /// Create a new client.
     /// This will automatically build a [reqwest::Client] used internally.
     pub fn new(api_key: &str) -> Client {
@@ -45,6 +44,7 @@ impl Client {
         }
     }
 
+    /// Build a client using your own [reqwest::Client].
     pub fn new_with_client(api_key: &str, req_client: reqwest::Client) -> Client {
         Client {
             req_client,
@@ -53,7 +53,7 @@ impl Client {
     }
 
     /// List and describe the various models available in the API. You can refer to the [Models](https://platform.openai.com/docs/models) documentation to understand what models are available and the differences between them.
-    /// 
+    ///
     /// ```no_run
     /// # let api_key = "";
     /// # tokio_test::block_on(async {
@@ -61,13 +61,18 @@ impl Client {
     /// let models = client.list_models().await.unwrap();
     /// # })
     /// ```
-    /// 
+    ///
     /// See <https://platform.openai.com/docs/api-reference/models/list>.
     pub async fn list_models(&self) -> Result<Vec<models::Model>, anyhow::Error> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/models");
 
-        let res = self.req_client.get(url).bearer_auth(&self.key).send().await?;
+        let res = self
+            .req_client
+            .get(url)
+            .bearer_auth(&self.key)
+            .send()
+            .await?;
 
         if res.status() == 200 {
             Ok(res.json::<models::ListModelsResponse>().await?.data)
@@ -77,7 +82,7 @@ impl Client {
     }
 
     /// Given a list of messages comprising a conversation, the model will return a response.
-    /// 
+    ///
     /// See <https://platform.openai.com/docs/api-reference/chat>.
     /// ```no_run
     /// # use tokio_test;
@@ -95,25 +100,34 @@ impl Client {
     /// println!("{}", res.choices[0].message.content);
     /// # })
     /// ```
-    pub async fn create_chat(&self, args: chat::ChatArguments) -> Result<chat::ChatResponse, anyhow::Error>  {
+    pub async fn create_chat(
+        &self,
+        args: chat::ChatArguments,
+    ) -> Result<chat::ChatResponse, anyhow::Error> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/chat/completions");
 
-        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
+        let res = self
+            .req_client
+            .post(url)
+            .bearer_auth(&self.key)
+            .json(&args)
+            .send()
+            .await?;
 
         if res.status() == 200 {
             Ok(res.json::<chat::ChatResponse>().await?)
         } else {
             Err(anyhow!(res.text().await?))
-        }  
+        }
     }
 
     /// Like [Client::create_chat] but with streaming.
-    /// 
+    ///
     /// See <https://platform.openai.com/docs/api-reference/chat>.
-    /// 
+    ///
     /// This method will return a stream. Calling [next](StreamExt::next) on it will return a vector of [chat::stream::ChatResponseEvent]s.
-    /// 
+    ///
     /// ```no_run
     /// # use tokio_test;
     /// # tokio_test::block_on(async {
@@ -136,7 +150,7 @@ impl Client {
     /// }
     /// # })
     /// ```
-    /// 
+    ///
     pub async fn create_chat_stream(
         &self,
         args: chat::ChatArguments,
@@ -148,7 +162,13 @@ impl Client {
         let mut args = args;
         args.stream = Some(true);
 
-        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
+        let res = self
+            .req_client
+            .post(url)
+            .bearer_auth(&self.key)
+            .json(&args)
+            .send()
+            .await?;
 
         if res.status() == 200 {
             let stream = res.bytes_stream();
@@ -160,9 +180,9 @@ impl Client {
     }
 
     /// Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
-    /// 
+    ///
     /// See <https://platform.openai.com/docs/api-reference/completions>
-    /// 
+    ///
     /// ```no_run
     /// # use openai_rust::*;
     /// # use tokio_test;
@@ -173,23 +193,32 @@ impl Client {
     /// println!("{}", c.create_completion(args).await.unwrap().choices[0].text);
     /// # })
     /// ```
-    pub async fn create_completion(&self, args: completions::CompletionArguments) -> Result<completions::CompletionResponse> {
+    pub async fn create_completion(
+        &self,
+        args: completions::CompletionArguments,
+    ) -> Result<completions::CompletionResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/completions");
 
-        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
+        let res = self
+            .req_client
+            .post(url)
+            .bearer_auth(&self.key)
+            .json(&args)
+            .send()
+            .await?;
 
         if res.status() == 200 {
             Ok(res.json::<completions::CompletionResponse>().await?)
         } else {
             Err(anyhow!(res.text().await?))
-        }  
+        }
     }
 
     /// Given a prompt and an instruction, the model will return an edited version of the prompt.
-    /// 
+    ///
     /// See <https://platform.openai.com/docs/api-reference/edits>
-    /// 
+    ///
     /// ```no_run
     /// # use openai_rust;
     /// # use tokio_test;
@@ -200,24 +229,30 @@ impl Client {
     /// println!("{}", c.create_edit(args).await.unwrap().to_string());
     /// # })
     /// ```
-    /// 
+    ///
     pub async fn create_edit(&self, args: edits::EditArguments) -> Result<edits::EditResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/edits");
 
-        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
+        let res = self
+            .req_client
+            .post(url)
+            .bearer_auth(&self.key)
+            .json(&args)
+            .send()
+            .await?;
 
         if res.status() == 200 {
             Ok(res.json::<edits::EditResponse>().await?)
         } else {
             Err(anyhow!(res.text().await?))
-        } 
+        }
     }
 
     /// Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
-    /// 
+    ///
     /// See <https://platform.openai.com/docs/api-reference/embeddings>
-    /// 
+    ///
     /// ```no_run
     /// # use openai_rust;
     /// # use tokio_test;
@@ -228,12 +263,21 @@ impl Client {
     /// println!("{:?}", c.create_embeddings(args).await.unwrap().data);
     /// # })
     /// ```
-    /// 
-    pub async fn create_embeddings(&self, args: embeddings::EmbeddingsArguments) -> Result<embeddings::EmbeddingsResponse> {
+    ///
+    pub async fn create_embeddings(
+        &self,
+        args: embeddings::EmbeddingsArguments,
+    ) -> Result<embeddings::EmbeddingsResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/embeddings");
 
-        let res = self.req_client.post(url).bearer_auth(&self.key).json(&args).send().await?;
+        let res = self
+            .req_client
+            .post(url)
+            .bearer_auth(&self.key)
+            .json(&args)
+            .send()
+            .await?;
 
         if res.status() == 200 {
             Ok(res.json::<embeddings::EmbeddingsResponse>().await?)
@@ -241,5 +285,4 @@ impl Client {
             Err(anyhow!(res.text().await?))
         }
     }
-
 }

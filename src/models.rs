@@ -10,7 +10,7 @@ pub(crate) struct ListModelsResponse {
 pub struct Model {
     pub id: String,
     pub owned_by: String,
-    pub permission: Vec<ModelPermission>
+    pub permission: Vec<ModelPermission>,
 }
 
 /// Permissions of a model
