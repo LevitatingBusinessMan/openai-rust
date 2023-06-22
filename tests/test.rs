@@ -92,6 +92,6 @@ pub async fn external_client() {
         .user_agent("My cool program")
         .build()
         .unwrap();
-    let c = openai_rust::Client::new_with_client(&KEY, req_c);
+    let c = openai_rust::ClientWithReqwest::new(&KEY, req_c);
     c.list_models().await.unwrap();
 }
