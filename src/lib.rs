@@ -4,19 +4,10 @@ use futures_util::stream::Stream;
 use futures_util::StreamExt;
 use lazy_static::lazy_static;
 use reqwest;
+#[cfg(feature = "middleware")]
+use reqwest_middleware;
 
 pub extern crate futures_util;
-
-lazy_static! {
-    static ref BASE_URL: reqwest::Url =
-        reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
-}
-
-/// This is the main interface to interact with the api.
-pub struct Client {
-    req_client: reqwest::Client,
-    key: String,
-}
 
 /// See <https://platform.openai.com/docs/api-reference/models>.
 pub mod models;
@@ -33,19 +24,46 @@ pub mod edits;
 /// See <https://platform.openai.com/docs/api-reference/embeddings>.
 pub mod embeddings;
 
+lazy_static! {
+    static ref BASE_URL: reqwest::Url =
+        reqwest::Url::parse("https://api.openai.com/v1/models").unwrap();
+}
+
+/// This is the main interface to interact with the api.
+pub struct Client {
+    req_client: ReqwestClient,
+    key: String,
+}
+
+#[cfg(feature = "middleware")]
+/// This type is is a [reqwest_middleware::ClientWithMiddleware]. To use a normal [reqwest::Client] instead, disable the middleware feature.
+pub type ReqwestClient = reqwest_middleware::ClientWithMiddleware;
+#[cfg(feature = "middleware")]
+type ReqwestClientBuilder = reqwest_middleware::ClientBuilder;
+
+
+#[cfg(not(feature = "middleware"))]
+/// This type is is a [reqwest::Client]. To use a client that supports adding middleware, enable the middleware feature.
+pub type ReqwestClient = reqwest::Client;
+#[cfg(not(feature = "middleware"))]
+type ReqwestClientBuilder = reqwest::ClientBuilder;
+
 impl Client {
     /// Create a new client.
-    /// This will automatically build a [reqwest::Client] used internally.
+    /// This will automatically build a [ReqwestClient] used internally.
     pub fn new(api_key: &str) -> Client {
-        let req_client = reqwest::ClientBuilder::new().build().unwrap();
+        #[cfg(not(feature = "middleware"))]
+        let req_client = ReqwestClientBuilder::new().build().unwrap();
+        #[cfg(feature = "middleware")]
+        let req_client = ReqwestClientBuilder::new(reqwest::Client::new()).build();
         Client {
             req_client,
             key: api_key.to_owned(),
         }
     }
 
-    /// Build a client using your own [reqwest::Client].
-    pub fn new_with_client(api_key: &str, req_client: reqwest::Client) -> Client {
+    /// Build a client using your own [ReqwestClient].
+    pub fn new_with_client(api_key: &str, req_client: ReqwestClient) -> Client {
         Client {
             req_client,
             key: api_key.to_owned(),

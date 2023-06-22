@@ -86,6 +86,7 @@ pub async fn create_embeddings() {
 }
 
 #[tokio::test]
+#[cfg(not(feature = "middleware"))]
 pub async fn external_client() {
     use reqwest;
     let req_c = reqwest::ClientBuilder::new()
@@ -95,3 +96,18 @@ pub async fn external_client() {
     let c = openai_rust::Client::new_with_client(&KEY, req_c);
     c.list_models().await.unwrap();
 }
+
+#[tokio::test]
+#[cfg(feature = "middleware")]
+pub async fn external_client_middleware() {
+    use reqwest;
+    use reqwest_middleware;
+    let req_c = reqwest::ClientBuilder::new()
+        .user_agent("My cool program")
+        .build()
+        .unwrap();
+    let req_c = reqwest_middleware::ClientBuilder::new(req_c).build();
+    let c = openai_rust::Client::new_with_client(&KEY, req_c);
+    c.list_models().await.unwrap();
+}
+
