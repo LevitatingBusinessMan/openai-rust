@@ -9,7 +9,7 @@ async fn main() {
     let args = openai_rust::chat::ChatArguments::new(
         "gpt-3.5-turbo",
         vec![openai_rust::chat::Message {
-            role: "user".to_owned(),
+            role: openai_rust::chat::Role::User,
             content: "Hello GPT!".to_owned(),
         }],
     );

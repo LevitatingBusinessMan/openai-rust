@@ -252,11 +252,12 @@ pub struct Choice {
 /// A message.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
-    pub role: String,
+    pub role: Role,
     pub content: String,
 }
 
 /// Role of a [Message].
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Role {
     System,
     Assistant,
