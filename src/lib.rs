@@ -28,6 +28,7 @@ pub mod chat;
 pub mod completions;
 
 /// See <https://platform.openai.com/docs/api-reference/edits>.
+#[deprecated = "Use the chat api instead"]
 pub mod edits;
 
 /// See <https://platform.openai.com/docs/api-reference/embeddings>.
