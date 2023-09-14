@@ -43,3 +43,4 @@ Checkout the examples directory for more usage examples. You can find documentat
 * [openai-cli](https://github.com/LevitatingBusinessMan/openai-cli): a CLI for interacting with GPT.
 * [gpt-cli-rust](https://github.com/memochou1993/gpt-cli-rust): Another CLI.
 * [electocracy](https://github.com/marioloko/electocracy): A digital voting system.
+* [awsgpt](https://github.com/fizlip/awsgpt): Interact with the aws-cli via GPT.
