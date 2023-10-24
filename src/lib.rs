@@ -2,6 +2,7 @@
 use anyhow::{anyhow, Result};
 use futures_util::stream::Stream;
 use futures_util::StreamExt;
+use images::ImageResponse;
 use lazy_static::lazy_static;
 use reqwest;
 
@@ -33,6 +34,9 @@ pub mod edits;
 
 /// See <https://platform.openai.com/docs/api-reference/embeddings>.
 pub mod embeddings;
+
+/// See <https://platform.openai.com/docs/api-reference/images>.
+pub mod images;
 
 impl Client {
     /// Create a new client.
@@ -117,7 +121,7 @@ impl Client {
             .await?;
 
         if res.status() == 200 {
-            Ok(res.json::<chat::ChatResponse>().await?)
+            Ok(res.json().await?)
         } else {
             Err(anyhow!(res.text().await?))
         }
@@ -210,7 +214,7 @@ impl Client {
             .await?;
 
         if res.status() == 200 {
-            Ok(res.json::<completions::CompletionResponse>().await?)
+            Ok(res.json().await?)
         } else {
             Err(anyhow!(res.text().await?))
         }
@@ -244,7 +248,7 @@ impl Client {
             .await?;
 
         if res.status() == 200 {
-            Ok(res.json::<edits::EditResponse>().await?)
+            Ok(res.json().await?)
         } else {
             Err(anyhow!(res.text().await?))
         }
@@ -281,7 +285,35 @@ impl Client {
             .await?;
 
         if res.status() == 200 {
-            Ok(res.json::<embeddings::EmbeddingsResponse>().await?)
+            Ok(res.json().await?)
+        } else {
+            Err(anyhow!(res.text().await?))
+        }
+    }
+
+    /// Creates an image given a prompt.
+    pub async fn create_image(
+        &self,
+        args: images::ImageArguments,
+    ) -> Result<Vec<String>> {
+        let mut url = BASE_URL.clone();
+        url.set_path("/v1/images/generations");
+
+        let res = self
+            .req_client
+            .post(url)
+            .bearer_auth(&self.key)
+            .json(&args)
+            .send()
+            .await?;
+
+        if res.status() == 200 {
+            Ok(res.json::<images::ImageResponse>().await?.data.iter().map(|o|
+                match o {
+                    images::ImageObject::Url(s) => s.to_string(),
+                    images::ImageObject::Base64JSON(s) => s.to_string(),
+                }
+            ).collect())
         } else {
             Err(anyhow!(res.text().await?))
         }

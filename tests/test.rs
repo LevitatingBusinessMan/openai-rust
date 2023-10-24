@@ -95,3 +95,10 @@ pub async fn external_client() {
     let c = openai_rust::Client::new_with_client(&KEY, req_c);
     c.list_models().await.unwrap();
 }
+
+#[tokio::test]
+pub async fn create_image() {
+    let c = openai_rust::Client::new(&KEY);
+    let args = openai_rust::images::ImageArguments::new("Lovecraftian Dagon");
+    c.create_image(args).await.unwrap();
+}
