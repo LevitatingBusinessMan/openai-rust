@@ -235,6 +235,7 @@ impl Client {
     /// # })
     /// ```
     ///
+    #[deprecated = "Use the chat api instead"]
     pub async fn create_edit(&self, args: edits::EditArguments) -> Result<edits::EditResponse> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/edits");
