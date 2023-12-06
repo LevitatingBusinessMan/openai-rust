@@ -221,10 +221,10 @@ pub mod stream {
         fn deserialize_buf(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Option<anyhow::Result<ChatCompletionChunk>> {
             // let's take the first chunk
             let bufclone = self.buf.clone();
-            let mut chunks = bufclone.split("\n\n");
+            let mut chunks = bufclone.split("\n\n").peekable();
             let first = chunks.next();
-            let second = chunks.next();
-            
+            let second = chunks.peek();
+
             match first {
                 Some(first) => {
                     match first.strip_prefix("data: ") {
@@ -234,15 +234,16 @@ pub mod stream {
                                 // [DONE] marker
                                 None
                             } else {
-                                // Save the remainder
-                                self.get_mut().buf = chunks.remainder().unwrap_or("").to_owned();
-
                                 // If there's a second chunk, wake
                                 if let Some(second) = second {
                                     if second.ends_with("}") {
                                         cx.waker().wake_by_ref();
                                     }
                                 }
+
+                                // Save the remainder
+                                self.get_mut().buf = chunks.collect::<Vec<_>>().join("\n\n");
+                                //self.get_mut().buf = chunks.remainder().unwrap_or("").to_owned();
 
                                 Some(
                                     serde_json::from_str::<ChatCompletionChunk>(&chunk)

@@ -1,5 +1,5 @@
 #![doc = include_str!("../README.md")]
-#![feature(str_split_remainder)]
+//#![feature(str_split_remainder)]
 use anyhow::{anyhow, Result};
 use lazy_static::lazy_static;
 use reqwest;
