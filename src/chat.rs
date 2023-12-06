@@ -112,20 +112,20 @@ impl ChatArguments {
 /// #   \"total_tokens\": 21
 /// #  }
 /// # }";
-/// # let res = serde_json::from_str::<openai_rust::chat::ChatResponse>(json).unwrap();
+/// # let res = serde_json::from_str::<openai_rust::chat::ChatCompletion>(json).unwrap();
 /// let msg = &res.choices[0].message.content;
 /// // or
 /// let msg = res.to_string();
 /// ```
 #[derive(Deserialize, Debug, Clone)]
-pub struct ChatResponse {
+pub struct ChatCompletion {
     pub id: String,
     pub created: u32,
     pub choices: Vec<Choice>,
     pub usage: Usage,
 }
 
-impl std::fmt::Display for ChatResponse {
+impl std::fmt::Display for ChatCompletion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.choices[0].message.content)?;
         Ok(())
@@ -135,9 +135,11 @@ impl std::fmt::Display for ChatResponse {
 /// Structs and deserialization method for the responses
 /// when using streaming chat responses.
 pub mod stream {
-    use anyhow::Context;
     use bytes::Bytes;
+    use futures_util::Stream;
     use serde::Deserialize;
+    use std::pin::Pin;
+    use std::task::Poll;
     use std::str;
 
     /// This is the partial chat result received when streaming.
@@ -160,20 +162,21 @@ pub mod stream {
     /// #   }
     /// # ]
     /// # }";
-    /// # let res = serde_json::from_str::<openai_rust::chat::stream::ChatResponseEvent>(json).unwrap();
+    /// # let res = serde_json::from_str::<openai_rust::chat::stream::ChatCompletionChunk>(json).unwrap();
     /// let msg = &res.choices[0].delta.content;
     /// // or
     /// let msg = res.to_string();
     /// ```
     #[derive(Deserialize, Debug, Clone)]
-    pub struct ChatResponseEvent {
+    pub struct ChatCompletionChunk {
         pub id: String,
         pub created: u32,
         pub model: String,
         pub choices: Vec<Choice>,
+        pub system_fingerprint: Option<String>,
     }
 
-    impl std::fmt::Display for ChatResponseEvent {
+    impl std::fmt::Display for ChatCompletionChunk {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             write!(
                 f,
@@ -184,7 +187,7 @@ pub mod stream {
         }
     }
 
-    /// Choices for [ChatResponseEvent].
+    /// Choices for [ChatCompletionEvent].
     #[derive(Deserialize, Debug, Clone)]
     pub struct Choice {
         pub delta: ChoiceDelta,
@@ -198,42 +201,104 @@ pub mod stream {
         pub content: Option<String>,
     }
 
-    /// Used for deserializing the event stream
-    pub(crate) fn deserialize_chat_events(
-        body: Result<Bytes, reqwest::Error>,
-    ) -> Result<Vec<ChatResponseEvent>, anyhow::Error> {
-        let body = body?;
-        let data = str::from_utf8(&body)?.to_owned();
+    pub struct ChatCompletionChunkStream {
+        byte_stream: Pin<Box<dyn Stream<Item = reqwest::Result<Bytes>>>>,
+        // internal buffer of incomplete completionchunks
+        buf: String,
+    }
 
-        // All events are in the form of data: {...}
-        // Except the last event which is always in the form of data: [DONE]
+    impl ChatCompletionChunkStream {
 
-        let events = data.split("\n\n");
-
-        let mut responses = vec![];
-
-        for event in events {
-            if event.is_empty() {
-                break;
-            };
-
-            // Remove the 'data: ' to make it valid JSON
-            let str = event
-                .strip_prefix("data: ")
-                .context("Unexpected response format")?;
-
-            if str == "[DONE]" {
-                break;
+        pub(crate) fn new(stream: Pin<Box<dyn Stream<Item = reqwest::Result<Bytes>>>>) -> Self {
+            Self {
+                byte_stream: stream,
+                buf: String::new(),
             }
-
-            responses.push(serde_json::from_str::<ChatResponseEvent>(&str)?);
         }
 
-        Ok(responses)
+        /// If possible, returns a the first deserialized chunk
+        /// from the buffer.
+        fn deserialize_buf(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Option<anyhow::Result<ChatCompletionChunk>> {
+            // let's take the first chunk
+            let bufclone = self.buf.clone();
+            let mut chunks = bufclone.split("\n\n");
+            let first = chunks.next();
+            let second = chunks.next();
+            
+            match first {
+                Some(first) => {
+                    match first.strip_prefix("data: ") {
+                        Some(chunk) => {
+                            if !chunk.ends_with("}") {
+                                // This guard happens on partial chunks or the
+                                // [DONE] marker
+                                None
+                            } else {
+                                // Save the remainder
+                                self.get_mut().buf = chunks.remainder().unwrap_or("").to_owned();
+
+                                // If there's a second chunk, wake
+                                if let Some(second) = second {
+                                    if second.ends_with("}") {
+                                        cx.waker().wake_by_ref();
+                                    }
+                                }
+
+                                Some(
+                                    serde_json::from_str::<ChatCompletionChunk>(&chunk)
+                                    .map_err(|e| anyhow::anyhow!(e))
+                                )
+                            }
+                        },
+                        None => None,
+                    }
+                },
+                None => None,
+            }
+        }
+    }
+
+    impl Stream for ChatCompletionChunkStream {
+        type Item = anyhow::Result<ChatCompletionChunk>;
+
+        fn poll_next(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<Self::Item>> {
+
+            // Possibly fetch a chunk from the buffer
+            match self.as_mut().deserialize_buf(cx) {
+                Some(chunk) => return Poll::Ready(Some(chunk)),
+                None => {},
+            };
+
+            match self.byte_stream.as_mut().poll_next(cx) {
+                Poll::Ready(bytes_option) => match bytes_option {
+                    Some(bytes_result) => match bytes_result {
+                        Ok(bytes) => {
+                            // Finally actually get some bytes
+                            let data = str::from_utf8(&bytes)?.to_owned();
+                            self.buf = self.buf.clone() + &data;
+                            match self.deserialize_buf(cx) {
+                                Some(chunk) => Poll::Ready(Some(chunk)),
+                                // Partial
+                                None => {
+                                    // On a partial, I think the best we can do is just to wake the
+                                    // task again. If we don't this task will get stuck.
+                                    cx.waker().wake_by_ref();
+                                    Poll::Pending
+                                },
+                            }
+                        },
+                        Err(e) => Poll::Ready(Some(Err(e.into()))),
+                    },
+                    // Stream terminated
+                    None => Poll::Ready(None),
+                },
+                Poll::Pending => Poll::Pending,
+            }
+        }
     }
 }
 
-/// Infomration about the tokens used by [ChatResponse].
+/// Infomration about the tokens used by [ChatCompletion].
 #[derive(Deserialize, Debug, Clone)]
 pub struct Usage {
     pub prompt_tokens: u32,
@@ -241,7 +306,7 @@ pub struct Usage {
     pub total_tokens: u32,
 }
 
-/// Completion choices from [ChatResponse].
+/// Completion choices from [ChatCompletion].
 #[derive(Deserialize, Debug, Clone)]
 pub struct Choice {
     pub index: u32,

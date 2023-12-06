@@ -1,7 +1,6 @@
 #![doc = include_str!("../README.md")]
+#![feature(str_split_remainder)]
 use anyhow::{anyhow, Result};
-use futures_util::stream::Stream;
-use futures_util::StreamExt;
 use images::ImageResponse;
 use lazy_static::lazy_static;
 use reqwest;
@@ -108,7 +107,7 @@ impl Client {
     pub async fn create_chat(
         &self,
         args: chat::ChatArguments,
-    ) -> Result<chat::ChatResponse, anyhow::Error> {
+    ) -> Result<chat::ChatCompletion, anyhow::Error> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/chat/completions");
 
@@ -159,7 +158,7 @@ impl Client {
     pub async fn create_chat_stream(
         &self,
         args: chat::ChatArguments,
-    ) -> Result<impl Stream<Item = Result<Vec<chat::stream::ChatResponseEvent>>>> {
+    ) -> Result<chat::stream::ChatCompletionChunkStream> {
         let mut url = BASE_URL.clone();
         url.set_path("/v1/chat/completions");
 
@@ -176,9 +175,7 @@ impl Client {
             .await?;
 
         if res.status() == 200 {
-            let stream = res.bytes_stream();
-            let stream = stream.map(chat::stream::deserialize_chat_events);
-            Ok(stream)
+            Ok(chat::stream::ChatCompletionChunkStream::new(Box::pin(res.bytes_stream())))
         } else {
             Err(anyhow!(res.text().await?))
         }

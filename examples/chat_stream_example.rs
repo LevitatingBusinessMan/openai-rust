@@ -14,10 +14,8 @@ async fn main() {
         }],
     );
     let mut res = client.create_chat_stream(args).await.unwrap();
-    while let Some(events) = res.next().await {
-        for event in events.unwrap() {
-            print!("{}", event);
-            std::io::stdout().flush().unwrap();
-        }
+    while let Some(chunk) = res.next().await {
+        print!("{}", chunk.unwrap());
+        std::io::stdout().flush().unwrap();
     }
 }

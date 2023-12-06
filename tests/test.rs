@@ -1,4 +1,4 @@
-use futures_util::StreamExt;
+use futures_util::{StreamExt, FutureExt};
 use lazy_static::lazy_static;
 use openai_rust;
 use std::env::var;
@@ -36,6 +36,7 @@ pub async fn create_chat_stream() {
             content: "Hello GPT!".to_owned(),
         }],
     );
+
     c.create_chat_stream(args)
         .await
         .unwrap()
