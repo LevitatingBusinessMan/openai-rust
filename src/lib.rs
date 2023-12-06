@@ -146,11 +146,9 @@ impl Client {
     /// # ]);
     /// use openai_rust::futures_util::StreamExt;
     /// let mut res = client.create_chat_stream(args).await.unwrap();
-    /// while let Some(events) = res.next().await {
-    ///     for event in events.unwrap() {
-    ///         print!("{}", event.choices[0].delta.content.as_ref().unwrap_or(&"".to_owned()));
-    ///         std::io::stdout().flush().unwrap();
-    ///     }
+    /// while let Some(chunk) = res.next().await {
+    ///     print!("{}", chunk.unwrap());
+    ///     std::io::stdout().flush().unwrap();
     /// }
     /// # })
     /// ```
