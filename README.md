@@ -14,7 +14,7 @@ This is an unofficial library to interact with the [Openai-API](https://platform
 - [x] [Streaming Chat](https://platform.openai.com/docs/api-reference/chat/create#chat/create-stream)
 - [x] [Edit](https://platform.openai.com/docs/api-reference/edits/create)
 - [x] [Embeddings](https://platform.openai.com/docs/api-reference/embeddings/create)
-- [ ] Images
+- [x] [Images](https://platform.openai.com/docs/api-reference/images)
 - [ ] Audio
 - [ ] Files
 - [ ] Moderations
