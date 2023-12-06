@@ -1,7 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![feature(str_split_remainder)]
 use anyhow::{anyhow, Result};
-use images::ImageResponse;
 use lazy_static::lazy_static;
 use reqwest;
 
