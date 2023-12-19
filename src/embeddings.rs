@@ -1,3 +1,6 @@
+//! See <https://platform.openai.com/docs/api-reference/embeddings>.
+//! Use with [Client::create_embeddings](crate::Client::create_embeddings).
+
 use serde::{Deserialize, Serialize};
 /// Request arguments for embeddings.
 ///

@@ -1,3 +1,5 @@
+//! See <https://platform.openai.com/docs/api-reference/completions>.
+//! Use with [Client::create_completion](crate::Client::create_completion).
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};

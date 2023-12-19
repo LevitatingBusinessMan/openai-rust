@@ -1,3 +1,6 @@
+//! See <https://platform.openai.com/docs/api-reference/images>.
+//! Use with [Client::create_image](crate::Client::create_image).
+
 use serde::{Deserialize, Serialize};
 
 /// The format in which the generated images are returned.

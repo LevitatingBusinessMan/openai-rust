@@ -17,23 +17,11 @@ pub struct Client {
     key: String,
 }
 
-/// See <https://platform.openai.com/docs/api-reference/models>.
 pub mod models;
-
-/// See <https://platform.openai.com/docs/api-reference/chat>.
 pub mod chat;
-
-/// See <https://platform.openai.com/docs/api-reference/completions>.
 pub mod completions;
-
-/// See <https://platform.openai.com/docs/api-reference/edits>.
-#[deprecated = "Use the chat api instead"]
 pub mod edits;
-
-/// See <https://platform.openai.com/docs/api-reference/embeddings>.
 pub mod embeddings;
-
-/// See <https://platform.openai.com/docs/api-reference/images>.
 pub mod images;
 
 impl Client {
@@ -129,7 +117,7 @@ impl Client {
     ///
     /// See <https://platform.openai.com/docs/api-reference/chat>.
     ///
-    /// This method will return a stream. Calling [next](StreamExt::next) on it will return a vector of [chat::stream::ChatResponseEvent]s.
+    /// This method will return a stream of [chat::stream::ChatCompletionChunk]s. Use with [futures_util::StreamExt::next].
     ///
     /// ```no_run
     /// # use tokio_test;

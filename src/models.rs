@@ -1,3 +1,5 @@
+//! See <https://platform.openai.com/docs/api-reference/models>.
+//! Use with [Client::list_models](crate::Client::list_models).
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]

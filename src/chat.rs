@@ -1,3 +1,6 @@
+//! See <https://platform.openai.com/docs/api-reference/chat>.
+//! Use with [Client::create_chat](crate::Client::create_chat) or [Client::create_chat_stream](crate::Client::create_chat_stream).
+
 use serde::{Deserialize, Serialize};
 
 /// Request arguments for chat completion.
@@ -187,7 +190,7 @@ pub mod stream {
         }
     }
 
-    /// Choices for [ChatCompletionEvent].
+    /// Choices for [super::ChatCompletion].
     #[derive(Deserialize, Debug, Clone)]
     pub struct Choice {
         pub delta: ChoiceDelta,

@@ -1,3 +1,7 @@
+//! See <https://platform.openai.com/docs/api-reference/edits>.
+//! Use with [Client::create_edit](crate::Client::create_edit).
+#![deprecated = "Use the chat api instead"]
+
 use serde::{Deserialize, Serialize};
 
 /// Request arguments for edits.
