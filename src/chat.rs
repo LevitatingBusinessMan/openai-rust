@@ -72,6 +72,26 @@ pub struct ChatArguments {
     /// [Learn more](https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub response_format: Option<ResponseFormat>,
+}
+
+/// The response format for chat completions.
+/// Currently, only { "type": "json_object" } is supported.
+
+#[derive(Serialize, Debug, Clone)]
+pub struct ResponseFormat {
+    #[serde(rename = "type")]
+    pub format_type: ResponseFormatType,
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub enum ResponseFormatType {
+    #[serde(rename = "json_object")]
+    JsonObject,
+    #[serde(rename = "text")]
+    Text,
 }
 
 impl ChatArguments {
@@ -88,6 +108,7 @@ impl ChatArguments {
             presence_penalty: None,
             frequency_penalty: None,
             user: None,
+            response_format: None,
         }
     }
 }
